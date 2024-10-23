@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000'; // Địa chỉ của server Flask
+const API_URL = 'http://localhost:5000'; // Thay thế với địa chỉ server Flask của bạn
 
 // Đăng ký người dùng
 export const registerUser = (userData) => {
@@ -20,4 +20,14 @@ export const depositMoney = (data) => {
 // Rút tiền
 export const withdrawMoney = (data) => {
   return axios.post(`${API_URL}/withdraw`, data);
+};
+
+// Chuyển tiền
+export const transferMoney = (data) => {
+  return axios.post(`${API_URL}/transfer`, data);
+};
+
+// Lịch sử giao dịch
+export const fetchTransactionHistory = () => {
+  return axios.get(`${API_URL}/transactions`);
 };

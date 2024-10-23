@@ -1,42 +1,63 @@
+import mysql.connector
 from config import get_db_connection
+
 
 def deposit_money(account_id, amount):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    # Nạp tiền vào tài khoản
-    cursor.execute("UPDATE accounts SET balance = balance + %s WHERE account_id = %s", (amount, account_id))
-    
-    # Ghi lại giao dịch
-    cursor.execute("INSERT INTO transactions (account_id, transaction_type, amount) VALUES (%s, 'deposit', %s)", (account_id, amount))
-
+    cursor = conn.cursor()
+    query = "UPDATE accounts SET balance = balance + %s WHERE account_id = %s"
+    cursor.execute(query, (amount, account_id))
     conn.commit()
     cursor.close()
     conn.close()
 
 def withdraw_money(account_id, amount):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    # Kiểm tra số dư tài khoản
+    cursor = conn.cursor()
+    # Kiểm tra số dư trước khi rút tiền
     cursor.execute("SELECT balance FROM accounts WHERE account_id = %s", (account_id,))
-    account = cursor.fetchone()
+    balance = cursor.fetchone()[0]
+    if balance >= amount:
+        query = "UPDATE accounts SET balance = balance - %s WHERE account_id = %s"
+        cursor.execute(query, (amount, account_id))
+        conn.commit()
+        new_balance = balance - amount
+        cursor.close()
+        conn.close()
+        return new_balance
+    else:
+        cursor.close()
+        conn.close()
+        return None  # Hoặc bạn có thể raise exception
 
-    if account and account['balance'] >= amount:
-        new_balance = account['balance'] - amount
-        
-        # Cập nhật số dư mới
-        cursor.execute("UPDATE accounts SET balance = %s WHERE account_id = %s", (new_balance, account_id))
-        
-        # Ghi lại giao dịch
-        cursor.execute("INSERT INTO transactions (account_id, transaction_type, amount) VALUES (%s, 'withdraw', %s)", (account_id, amount))
+def transfer_money(from_account_id, to_account_id, amount):
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
+    # Kiểm tra số dư trước khi chuyển tiền
+    cursor.execute("SELECT balance FROM accounts WHERE account_id = %s", (from_account_id,))
+    from_balance = cursor.fetchone()[0]
+
+    if from_balance >= amount:
+        # Rút tiền từ tài khoản gửi
+        cursor.execute("UPDATE accounts SET balance = balance - %s WHERE account_id = %s", (amount, from_account_id))
+        # Nạp tiền vào tài khoản nhận
+        cursor.execute("UPDATE accounts SET balance = balance + %s WHERE account_id = %s", (amount, to_account_id))
         conn.commit()
         cursor.close()
         conn.close()
+        return True
+    else:
+        cursor.close()
+        conn.close()
+        return False  # Hoặc bạn có thể raise exception
 
-        return new_balance
-    
+def get_transaction_history(account_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = "SELECT * FROM transactions WHERE account_id = %s ORDER BY date DESC"
+    cursor.execute(query, (account_id,))
+    transactions = cursor.fetchall()
     cursor.close()
     conn.close()
-    return None
+    return [{"id": t[0], "account_id": t[1], "transaction_type": t[2], "amount": t[3], "date": t[4]} for t in transactions]

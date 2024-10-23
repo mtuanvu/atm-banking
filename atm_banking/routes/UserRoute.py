@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models.UserModel import register_user, login_user
+from models.UserModel import register_user, login_user, change_password  
 
 user_bp = Blueprint('user', __name__)
 
@@ -26,3 +26,16 @@ def login():
         return jsonify({"message": result}), 200
     else:
         return jsonify({"error": result}), 401
+
+
+@user_bp.route('/user/change-password', methods=['POST'])
+def change_password_route():
+    data = request.json
+    email = data.get('email')
+    old_password = data.get('old_password')
+    new_password = data.get('new_password')
+
+    if change_password(email, old_password, new_password):
+        return jsonify({"message": "Password changed successfully!"}), 200
+    else:
+        return jsonify({"error": "Failed to change password. Check old password and try again."}), 400
