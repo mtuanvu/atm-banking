@@ -29,22 +29,20 @@ def withdraw():
 @jwt_required()
 def transfer():
     data = request.json
+    print("Dữ liệu nhận được:", data)  # Kiểm tra dữ liệu nhận được từ frontend
+
     from_account_id = data.get('from_account_id')
-    to_account_id = data.get('to_account_id')
+    account_id = data.get('account_id')
     amount = data.get('amount')
 
-    if not from_account_id or not to_account_id or not amount:
+    # Kiểm tra xem tất cả các trường có tồn tại không
+    if not from_account_id or not account_id or not amount:
         return jsonify({"error": "Thiếu thông tin tài khoản hoặc số tiền"}), 400
 
-    # Kiểm tra thông tin tài khoản người nhận trước khi chuyển tiền
-    account_info = get_account_info(to_account_id)
-    if not account_info:
-        return jsonify({"error": "Tài khoản người nhận không tồn tại"}), 404
-
-    # Tiến hành chuyển tiền
-    result, message = transfer_money(from_account_id, to_account_id, amount)
+    # Thực hiện logic chuyển tiền
+    result, message = transfer_money(from_account_id, account_id, amount)
     if result:
-        return jsonify({"message": "Chuyển tiền thành công!", "receiver_name": account_info['name']}), 200
+        return jsonify({"message": message}), 200
     else:
         return jsonify({"error": message}), 400
     

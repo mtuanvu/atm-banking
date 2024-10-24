@@ -84,9 +84,7 @@ def transfer_money(from_account_id, to_account_id, amount):
     cursor = conn.cursor()
 
     # Kiểm tra tài khoản gửi
-    cursor.execute(
-        "SELECT balance FROM accounts WHERE account_id = %s", (from_account_id,)
-    )
+    cursor.execute("SELECT balance FROM accounts WHERE account_id = %s", (from_account_id,))
     from_balance = cursor.fetchone()
 
     if from_balance is None:
@@ -95,9 +93,7 @@ def transfer_money(from_account_id, to_account_id, amount):
         return False, "Sender account does not exist"
 
     # Kiểm tra tài khoản nhận
-    cursor.execute(
-        "SELECT balance FROM accounts WHERE account_id = %s", (to_account_id,)
-    )
+    cursor.execute("SELECT balance FROM accounts WHERE account_id = %s", (to_account_id,))
     to_balance = cursor.fetchone()
 
     if to_balance is None:
@@ -105,29 +101,20 @@ def transfer_money(from_account_id, to_account_id, amount):
         conn.close()
         return False, "Recipient account does not exist"
 
+    # Chuyển đổi amount sang kiểu số
+    amount = float(amount)  # Hoặc sử dụng `decimal.Decimal(amount)` nếu bạn muốn duy trì kiểu decimal
+
     if from_balance[0] >= amount:
         try:
             # Trừ tiền tài khoản gửi
-            cursor.execute(
-                "UPDATE accounts SET balance = balance - %s WHERE account_id = %s",
-                (amount, from_account_id),
-            )
+            cursor.execute("UPDATE accounts SET balance = balance - %s WHERE account_id = %s", (amount, from_account_id))
 
             # Cộng tiền tài khoản nhận
-            cursor.execute(
-                "UPDATE accounts SET balance = balance + %s WHERE account_id = %s",
-                (amount, to_account_id),
-            )
+            cursor.execute("UPDATE accounts SET balance = balance + %s WHERE account_id = %s", (amount, to_account_id))
 
             # Ghi lại giao dịch cho cả 2 tài khoản
-            cursor.execute(
-                "INSERT INTO transactions (account_id, transaction_type, amount) VALUES (%s, 'transfer', %s)",
-                (from_account_id, amount),
-            )
-            cursor.execute(
-                "INSERT INTO transactions (account_id, transaction_type, amount) VALUES (%s, 'transfer', %s)",
-                (to_account_id, amount),
-            )
+            cursor.execute("INSERT INTO transactions (account_id, transaction_type, amount) VALUES (%s, 'transfer', %s)", (from_account_id, amount))
+            cursor.execute("INSERT INTO transactions (account_id, transaction_type, amount) VALUES (%s, 'transfer', %s)", (to_account_id, amount))
 
             conn.commit()
             cursor.close()
@@ -143,6 +130,7 @@ def transfer_money(from_account_id, to_account_id, amount):
         cursor.close()
         conn.close()
         return False, "Insufficient balance"
+
 
 
 def get_account_info_and_user_name(account_id):

@@ -45,25 +45,27 @@ const Transfer = () => {
   };
 
   const onFinish = (values) => {
-    setLoading(true); // Bật trạng thái loading khi bắt đầu xử lý
+    console.log("Dữ liệu form:", values);  // Kiểm tra dữ liệu trước khi gửi lên server
+    setLoading(true);  // Bật trạng thái loading khi bắt đầu xử lý
     transferMoney(values)
       .then((res) => {
         if (res && res.data && res.data.message) {
-          message.success(res.data.message); // Hiển thị thông báo thành công
+          message.success(res.data.message);  // Hiển thị thông báo thành công
         } else {
-          message.error("Phản hồi không mong đợi từ server."); // Hiển thị lỗi nếu server phản hồi không rõ ràng
+          message.error("Phản hồi không mong đợi từ server.");  // Hiển thị lỗi nếu server phản hồi không rõ ràng
         }
       })
       .catch((error) => {
+        console.error("Error:", error.response?.data);  // Kiểm tra lỗi chi tiết
         message.error(
-          error.response?.data?.error ||
-            "Chuyển tiền thất bại. Vui lòng thử lại."
-        ); // Hiển thị lỗi nếu có lỗi
+          error.response?.data?.error || "Chuyển tiền thất bại. Vui lòng thử lại."
+        );
       })
       .finally(() => {
-        setLoading(false); // Tắt trạng thái loading sau khi xử lý xong
+        setLoading(false);  // Tắt trạng thái loading sau khi xử lý xong
       });
   };
+  
 
   // Hàm xử lý khi người dùng nhập account ID của người nhận
   const handleReceiverChange = (e) => {
