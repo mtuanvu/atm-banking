@@ -4,14 +4,18 @@ import { fetchTransactionHistory } from '../apiService';
 
 const TransactionHistory = () => {
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false); // Trạng thái loading khi tải dữ liệu
 
   useEffect(() => {
+    setLoading(true); // Bật trạng thái loading
     fetchTransactionHistory()
       .then((res) => {
         setData(res.data.transactions);
+        setLoading(false); // Tắt trạng thái loading sau khi tải dữ liệu
       })
       .catch((error) => {
         message.error('Failed to fetch transaction history.');
+        setLoading(false); // Tắt trạng thái loading khi có lỗi
       });
   }, []);
 
@@ -30,15 +34,28 @@ const TransactionHistory = () => {
       title: 'Amount',
       dataIndex: 'amount',
       key: 'amount',
+      render: (amount) => `$${amount}`, // Hiển thị số tiền với ký hiệu đô la
     },
     {
       title: 'Date',
       dataIndex: 'date',
       key: 'date',
+      render: (date) => new Date(date).toLocaleString(), // Hiển thị ngày tháng rõ ràng hơn
     },
   ];
 
-  return <Table dataSource={data} columns={columns} rowKey="id" />;
+  return (
+    <div style={{ padding: '20px', paddingTop: "3rem" }}>
+      <h2>Transaction History</h2>
+      <Table
+        dataSource={data}
+        columns={columns}
+        rowKey="id"
+        loading={loading} // Trạng thái loading
+        pagination={{ pageSize: 10 }} // Phân trang với số mục mỗi trang là 10
+      />
+    </div>
+  );
 };
 
 export default TransactionHistory;

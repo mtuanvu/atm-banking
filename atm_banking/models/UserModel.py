@@ -2,10 +2,9 @@ from passlib.context import CryptContext
 import mysql.connector
 from config import get_db_connection
 
-# Khởi tạo pwd_context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def register_user(name, email, password):
+def register_user(name, email, password, account_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -14,13 +13,16 @@ def register_user(name, email, password):
     try:
         cursor.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)", (name, email, hashed_password))
         conn.commit()
-        return True
+
+        # Tạo account cho user
+        cursor.execute("INSERT INTO accounts (account_id, user_id, balance) VALUES (%s, %s, 0)", (account_id, cursor.lastrowid))
+        conn.commit()
+
+        return True, "User registered successfully."
     except mysql.connector.IntegrityError as ie:
-        print(f"IntegrityError: {ie}")  # Handle integrity error (e.g., duplicate email)
-        return False
+        return False, f"IntegrityError: {ie}"  # Handle integrity error (e.g., duplicate email or account_id)
     except Exception as e:
-        print(f"Error: {e}")  # Handle other errors
-        return False
+        return False, f"Error: {e}"
     finally:
         cursor.close()
         conn.close()
@@ -38,18 +40,16 @@ def login_user(email, password):
         return "Invalid email or password"
 
 def change_password(email: str, old_password: str, new_password: str) -> bool:
-    connection = get_db_connection()
-    cursor = connection.cursor(dictionary=True)
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
 
-    # Lấy người dùng từ cơ sở dữ liệu
     cursor.execute("SELECT password FROM users WHERE email = %s", (email,))
     user = cursor.fetchone()
 
-    # Kiểm tra mật khẩu cũ và cập nhật mật khẩu mới
-    if user and pwd_context.verify(old_password, user['password']):  # Kiểm tra mật khẩu cũ
-        hashed_new_password = pwd_context.hash(new_password)  # Mã hóa mật khẩu mới
+    if user and pwd_context.verify(old_password, user['password']):
+        hashed_new_password = pwd_context.hash(new_password)
         cursor.execute("UPDATE users SET password = %s WHERE email = %s", (hashed_new_password, email))
-        connection.commit()
+        conn.commit()
         return True
 
     return False
