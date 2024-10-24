@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.TransactionModel import deposit_money, withdraw_money, transfer_money, get_transaction_history, get_account_info_and_user_name
+from models.AccountModel import get_account_ids_by_user_id
+
 
 transaction_bp = Blueprint('transaction_bp', __name__)
 
@@ -23,23 +25,19 @@ def withdraw():
     if new_balance is not None:
         return jsonify({"message": message, "new_balance": new_balance}), 200
     else:
-        return jsonify({"error": "Insufficient balance!"}), 400
+        return jsonify({"error": message}), 400
 
 @transaction_bp.route('/transfer', methods=['POST'])
 @jwt_required()
 def transfer():
     data = request.json
-    print("Dữ liệu nhận được:", data)  # Kiểm tra dữ liệu nhận được từ frontend
-
     from_account_id = data.get('from_account_id')
     account_id = data.get('account_id')
     amount = data.get('amount')
 
-    # Kiểm tra xem tất cả các trường có tồn tại không
     if not from_account_id or not account_id or not amount:
-        return jsonify({"error": "Thiếu thông tin tài khoản hoặc số tiền"}), 400
+        return jsonify({"error": "Missing account or amount"}), 400
 
-    # Thực hiện logic chuyển tiền
     result, message = transfer_money(from_account_id, account_id, amount)
     if result:
         return jsonify({"message": message}), 200
@@ -68,6 +66,11 @@ def check_receiver():
 @transaction_bp.route('/transactions', methods=['GET'])
 @jwt_required()
 def transactions():
-    account_id = request.args.get('account_id')
-    transactions = get_transaction_history(account_id)
+    user_id = get_jwt_identity()
+    account_ids = get_account_ids_by_user_id(user_id)
+
+    transactions = []
+    for account_id in account_ids:
+         transactions += get_transaction_history(account_id)
+
     return jsonify({"transactions": transactions})

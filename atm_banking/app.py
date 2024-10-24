@@ -8,10 +8,8 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
-# Thiết lập secret key cho JWT
 app.config['JWT_SECRET_KEY'] = '58983823111c66efa274fa874863b33f9a7fe5d243f631fed8a1933db799d1f5'
 
-# Khởi tạo JWT Manager
 jwt = JWTManager(app)
 
 # Đăng ký các route

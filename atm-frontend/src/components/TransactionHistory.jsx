@@ -1,6 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Table, message } from 'antd';
-import { fetchTransactionHistory } from '../apiService';
+import axios from 'axios';
+
+const fetchTransactionHistory = async () => {
+  const token = localStorage.getItem('token'); // Lấy token từ localStorage
+  try {
+    const res = await axios.get('http://localhost:5000/transactions', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return res;
+  } catch (error) {
+    console.error('Failed to fetch transaction history:', error);
+    throw error;
+  }
+};
 
 const TransactionHistory = () => {
   const [data, setData] = useState([]);

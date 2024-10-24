@@ -1,37 +1,44 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Menu, message } from 'antd';
+import { Layout, Menu } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
-import { fetchAccountInfo } from './AccountService';  // Import the service
+import { fetchAccountInfo } from './AccountService';
 
 const { Header } = Layout;
 
 const AppHeader = () => {
-  const token = localStorage.getItem('token');  // Kiểm tra token từ localStorage
-  const [accountId, setAccountId] = useState(localStorage.getItem('account_id') || '');  // Lấy Account ID từ localStorage
-  const [balance, setBalance] = useState(localStorage.getItem('balance') || '');  // Lấy số dư từ localStorage
+  const token = localStorage.getItem('token'); 
+  const [accountId, setAccountId] = useState(localStorage.getItem('account_id') || '');
+  const [balance, setBalance] = useState(localStorage.getItem('balance') || ''); 
 
   const navigate = useNavigate();
 
-  // Gọi API để lấy thông tin tài khoản và số dư khi component được render
   useEffect(() => {
     const loadAccountInfo = async () => {
-      const accountInfo = await fetchAccountInfo();
-      if (accountInfo) {
-        setAccountId(accountInfo.account_id);
-        setBalance(accountInfo.balance);
+      if (token) { 
+        try {
+          const accountInfo = await fetchAccountInfo(); 
+          if (accountInfo) {
+            setAccountId(accountInfo.account_id);
+            setBalance(accountInfo.balance);
+            localStorage.setItem('account_id', accountInfo.account_id); 
+            localStorage.setItem('balance', accountInfo.balance); 
+          }
+        } catch (error) {
+          console.error("Error fetching account info:", error);
+        }
       }
     };
 
     loadAccountInfo();
-  }, [token]);  // useEffect chỉ chạy khi token thay đổi
+  }, [token]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');  // Xóa token khi logout
+    localStorage.removeItem('token');
     localStorage.removeItem('account_id');
     localStorage.removeItem('balance');
-    setAccountId('');  // Reset state
-    setBalance('');  // Reset state
-    navigate('/login');  // Chuyển hướng về trang login
+    setAccountId('');
+    setBalance('');
+    navigate('/login');
   };
 
   return (
@@ -44,25 +51,25 @@ const AppHeader = () => {
           {!token ? (
             <>
               <Menu.Item key="1">
-                <Link to="/register">Đăng ký</Link>
+                <Link to="/register">Register</Link>
               </Menu.Item>
               <Menu.Item key="2">
-                <Link to="/">Đăng nhập</Link>
+                <Link to="/">Login</Link>
               </Menu.Item>
             </>
           ) : (
             <>
               <Menu.Item key="3">
-                <Link to="/deposit">Nạp tiền</Link>
+                <Link to="/deposit">Deposit</Link>
               </Menu.Item>
               <Menu.Item key="4">
-                <Link to="/withdraw">Rút tiền</Link>
+                <Link to="/withdraw">Withdraw</Link>
               </Menu.Item>
               <Menu.Item key="5">
-                <Link to="/transfer">Chuyển tiền</Link>
+                <Link to="/transfer">Transfer</Link>
               </Menu.Item>
               <Menu.Item key="6">
-                <Link to="/transactionHistory">Lịch sử giao dịch</Link>
+                <Link to="/transactionHistory">History</Link>
               </Menu.Item>
               <Menu.Item key="7" onClick={handleLogout}>
                 Logout

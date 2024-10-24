@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
-import axios from 'axios';  // Import axios trực tiếp vào đây
+import axios from 'axios';
 
 const Withdraw = () => {
-  const [loading, setLoading] = useState(false);  // Trạng thái loading khi xử lý yêu cầu
+  const [loading, setLoading] = useState(false);
 
   const withdrawMoney = async (data) => {
     try {
@@ -21,24 +21,24 @@ const Withdraw = () => {
   };
 
   const onFinish = (values) => {
-    setLoading(true);  // Bật trạng thái loading khi bắt đầu xử lý
+    setLoading(true);
     withdrawMoney(values)
       .then((res) => {
         if (res && res.data && res.data.message) {
-          message.success(res.data.message);  // Hiển thị thông báo thành công
+          message.success(res.data.message);
         } else {
-          message.error('Withdrawal failed');  // Hiển thị thông báo lỗi chung nếu không có phản hồi chi tiết từ server
+          message.error('Withdrawal failed');
         }
       })
       .catch((error) => {
         if (error.response && error.response.data && error.response.data.error) {
-          message.error(error.response.data.error);  // Hiển thị thông báo lỗi từ server nếu có
+          message.error(error.response.data.error);
         } else {
-          message.error('Server error during withdrawal');  // Hiển thị lỗi máy chủ
+          message.error('Server error during withdrawal');
         }
       })
       .finally(() => {
-        setLoading(false);  // Tắt trạng thái loading sau khi xử lý xong
+        setLoading(false);
       });
   };
 
@@ -47,7 +47,7 @@ const Withdraw = () => {
       <h2>Withdraw Money</h2>
       <Form 
         name="withdraw" 
-        onFinish={onFinish}  // Sự kiện gửi form
+        onFinish={onFinish} 
         layout="vertical"
       >
         <Form.Item

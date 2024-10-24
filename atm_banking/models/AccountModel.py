@@ -18,3 +18,15 @@ def get_account_by_user_id(user_id):
         print(f"No account found for user_id: {user_id}")
         return None
 
+def get_account_ids_by_user_id(user_id):
+    conn = get_db_connection() 
+    cursor = conn.cursor()
+
+    query = "SELECT account_id FROM accounts WHERE user_id = %s"
+    cursor.execute(query, (user_id,))
+    account_ids = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return [account[0] for account in account_ids]

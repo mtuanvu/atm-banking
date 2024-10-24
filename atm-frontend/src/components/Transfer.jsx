@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Form, Input, Button, message } from "antd";
-import axios from "axios"; // Import axios để thực hiện request
+import axios from "axios"; // Import axios trực tiếp vào đây
 
 const Transfer = () => {
   const [loading, setLoading] = useState(false); // Trạng thái loading khi xử lý yêu cầu
@@ -105,12 +105,12 @@ const Transfer = () => {
         >
           <Input
             placeholder="Enter the receiver's account ID"
-            onChange={handleReceiverChange}
+            onChange={handleReceiverChange}  // Kiểm tra tài khoản người nhận khi thay đổi account_id
           />
         </Form.Item>
         {receiverName && (
           <div style={{ marginBottom: "16px", color: "green" }}>
-            Receiver Name: {receiverName}
+            Receiver Name: {receiverName}  {/* Hiển thị tên người nhận */}
           </div>
         )}
 
